@@ -88,6 +88,6 @@ Bolt V2 is released under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Thank You
 
-Thank you for choosing TitanBot for your Discord server! We're constantly working to improve and add new features based on community feedback.
+Thank you for choosing Bolt V2 for your Discord server! We're constantly working to improve and add new features based on community feedback.
 
-*Last updated: May 2026*
+*Last updated: June 2026*
