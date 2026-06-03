@@ -1,10 +1,6 @@
-# TitanBot - Ultimate Discord Bot
+# Bolt V2 - Ultimate Discord Bot
 
-**TitanBot** is a powerful, feature-rich Discord bot designed to enhance your server experience with comprehensive moderation tools, engaging economy systems, utility features, and much more. Built with modern Discord.js v14 and PostgreSQL for optimal performance and data persistence.
-
-[![Support Server](https://img.shields.io/badge/-Support%20Server-%235865F2?logo=discord&logoColor=white&style=flat-square&logoWidth=20)](https://discord.gg/8kJBYhTGW9)
-[![Discord.js](https://img.shields.io/npm/v/discord.js?style=flat-square&labelColor=%23202225&color=%23202225&logo=npm&logoColor=white&logoWidth=20)](https://www.npmjs.com/package/discord.js)
-![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-%23336791?logo=postgresql&logoColor=white&style=flat-square&logoWidth=20)
+**Bolt V2** is a powerful, feature-rich Discord bot designed to enhance your server experience with comprehensive moderation tools, engaging economy systems, utility features, and much more. Built with modern Discord.js v14 and PostgreSQL for optimal performance and data persistence.
 
 ## Table of Contents
 
@@ -18,7 +14,7 @@
 <a name="features-overview"></a>
 ## Features Overview
 
-TitanBot offers a complete suite of tools for Discord server management and community engagement:
+Bolt V2 offers a complete suite of tools for Discord server management and community engagement:
 
 <table>
 <tr>
@@ -86,169 +82,9 @@ TitanBot offers a complete suite of tools for Discord server management and comm
 </tr>
 </table>
 
-<a name="quick-setup"></a>
-## Quick Setup (Recommended for non-coders)
-
-### Video Tutorial
-For a detailed step-by-step setup guide, watch our comprehensive video tutorial:
-[**TitanBot Setup Tutorial**](https://www.youtube.com/@TouchDisc)
-
-## Docker Deployment (Recommended)
-
-TitanBot is fully containerized for easy deployment.
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/codebymitch/TitanBot.git
-   cd TitanBot
-   ```
-
-2. **Configure environment variables:**
-   Create a `.env` file from `.env.example` and fill in your bot details and PostgreSQL credentials.
-
-3. **Start the containers:**
-   ```bash
-   docker-compose up -d
-   ```
-
-This will start both the bot and a persistent PostgreSQL database.
-
-### Using GitHub Container Registry
-
-The bot is automatically published to GitHub Container Registry on every push to main.
-
-```bash
-docker pull ghcr.io/codebymitch/titanbot:main
-```
-
-<a name="manual-installation-steps"></a>
-## Manual Installation Steps
-
-### Prerequisites
-- Node.js 18.0.0 or higher
-- PostgreSQL server (recommended) or memory storage fallback
-- Discord bot application with proper intents
-
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/codebymitch/TitanBot.git
-   cd TitanBot
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` with your configuration (only the following variables require configuration, leave remaining variables as default):
-   ```env
-   # Discord Bot Configuration
-   DISCORD_TOKEN=your_discord_bot_token_here
-   CLIENT_ID=your_discord_client_id_here
-   GUILD_ID=your_discord_guild_id_here
-
-   # PostgreSQL Configuration (Primary Database)
-   POSTGRES_URL=postgresql://postgres:yourpassword@localhost:5432/titanbot
-   POSTGRES_HOST=localhost
-   POSTGRES_PORT=5432
-   POSTGRES_DB=titanbot
-   POSTGRES_USER=postgres
-   POSTGRES_PASSWORD=yourpassword
-   ```
-
-   Production note:
-   - `NODE_ENV=production`
-   - `LOG_LEVEL=warn` for a clean production console (critical issues + startup status)
-   - `LOG_LEVEL=info` if you want more detailed operational logs
-   - If your chosen `PORT` is already used, TitanBot automatically tries the next port(s)
-
-   Environment options reference:
-   - `NODE_ENV`: `development`, `production`, `test` (any non-`production` value is treated as non-production)
-   - `LOG_LEVEL`: `error`, `warn`, `info`, `http`, `verbose`, `debug`, `silly`
-   - Accepted aliases for `LOG_LEVEL` in this bot: `warns`, `warning`, `warnings` → `warn`
-
-   Recommended production `.env` (easy mode + default mode):
-   ```env
-   NODE_ENV=production
-   LOG_LEVEL=warn
-   WEB_HOST=0.0.0.0
-   PORT=3000
-   PORT_RETRY_ATTEMPTS=5
-   ```
-   This gives clear startup/online status messages while keeping logs simple for non-technical operators.
-   If port `3000` is busy, the bot tries the next available ports automatically (up to `PORT_RETRY_ATTEMPTS`).
-
-4. **Setup PostgreSQL Database** (Optional but recommended)
-   ```bash
-   # Create database and user
-   createdb titanbot
-   createuser titanbot
-   psql -c "ALTER USER titanbot PASSWORD 'yourpassword';"
-   psql -c "GRANT ALL PRIVILEGES ON DATABASE titanbot TO titanbot;"
-   ```
-
-5. **Test Database Connection**
-   ```bash
-   npm run test-postgres
-   ```
-
-6. **Start the Bot**
-   ```bash
-   npm start
-   ```
-<a name="bot-intents"></a>
-
-## Required Bot Intents
-TitanBot requires the following Discord intents:
-- **Guilds**
-- **Guild Messages**
-- **Message Content**
-- **Guild Members**
-- **Guild Message Reactions**
-- **Guild Voice States**
-- **Direct Messages**
-- **Bot**
-- **Applications.commands**
-
-### Required Permissions
-- **View Channels**
-- **Send Messages**
-- **Embed Links**
-- **Attach Files**
-- **Read Message History**
-- **Manage Messages**
-- **Manage Channels**
-- **Manage Roles**
-- **Kick Members**
-- **Manage Messages**
-- **Ban Members**
-- **Moderate Members**
-- **Connect**
-
-<a name="contributing"></a>
-## Contributing
-
-We welcome contributions to TitanBot! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-3. **Make your changes**
-4. **Test thoroughly**
-5. **Submit a pull request**
-
-### Development Guidelines
-- Follow existing code style
-- Add proper error handling
-- Include documentation for new features
-- Test with PostgreSQL and memory storage
-
 ## License
 
-TitanBot is released under the MIT License. See [LICENSE](LICENSE) for details.
+Bolt V2 is released under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Thank You
 
