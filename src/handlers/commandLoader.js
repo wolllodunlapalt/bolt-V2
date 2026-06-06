@@ -3,15 +3,8 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { Collection } from 'discord.js';
 import { logger } from '../utils/logger.js';
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-
-
-
-
-
 function getSubcommandInfo(commandData) {
     const subcommands = [];
     
@@ -33,13 +26,6 @@ if (subOption.type === 1) {
     
     return subcommands;
 }
-
-
-
-
-
-
-
 async function getAllFiles(directory, fileList = []) {
     const files = await fs.readdir(directory, { withFileTypes: true });
     
@@ -58,12 +44,6 @@ async function getAllFiles(directory, fileList = []) {
     
     return fileList;
 }
-
-
-
-
-
-
 export async function loadCommands(client) {
     client.commands = new Collection();
     const commandsPath = path.join(__dirname, '../commands');
@@ -132,13 +112,6 @@ export async function loadCommands(client) {
     logger.info(`Loaded ${uniqueCommands.size} commands`);
     return client.commands;
 }
-
-
-
-
-
-
-
 export async function registerCommands(client, guildId) {
     try {
         const commands = [];
@@ -288,20 +261,20 @@ const registeredNames = new Set();
                 throw error;
             }
         } else {
-            logger.info('Skipping global command registration - bot is guild-only');
+            logger.info('Registering commands globally (Note: Discord can take up to 1 hour to display new global commands)...');
+            try {
+                await client.application.commands.set(commandsToRegister);
+                logger.info(`Successfully registered ${commandsToRegister.length} commands globally`);
+            } catch (globalError) {
+                logger.error('Failed to register commands globally:', globalError);
+                throw globalError;
+            }
         }
     } catch (error) {
         logger.error('Error registering commands:', error);
         throw error;
     }
 }
-
-
-
-
-
-
-
 export async function reloadCommand(client, commandName) {
     const command = client.commands.get(commandName);
     
@@ -313,7 +286,6 @@ export async function reloadCommand(client, commandName) {
         const commandPath = path.resolve(command.filePath);
         const moduleUrl = pathToFileURL(commandPath);
         moduleUrl.searchParams.set('t', Date.now().toString());
-
         const newCommand = (await import(moduleUrl.href)).default;
         
         client.commands.set(commandName, newCommand);
@@ -325,5 +297,3 @@ export async function reloadCommand(client, commandName) {
         return { success: false, message: `Error reloading command: ${error.message}` };
     }
 }
-
-
