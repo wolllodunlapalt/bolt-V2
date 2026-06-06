@@ -3,8 +3,15 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { Collection } from 'discord.js';
 import { logger } from '../utils/logger.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+
+
+
+
+
 function getSubcommandInfo(commandData) {
     const subcommands = [];
     
@@ -26,6 +33,13 @@ if (subOption.type === 1) {
     
     return subcommands;
 }
+
+
+
+
+
+
+
 async function getAllFiles(directory, fileList = []) {
     const files = await fs.readdir(directory, { withFileTypes: true });
     
@@ -44,6 +58,12 @@ async function getAllFiles(directory, fileList = []) {
     
     return fileList;
 }
+
+
+
+
+
+
 export async function loadCommands(client) {
     client.commands = new Collection();
     const commandsPath = path.join(__dirname, '../commands');
@@ -112,6 +132,13 @@ export async function loadCommands(client) {
     logger.info(`Loaded ${uniqueCommands.size} commands`);
     return client.commands;
 }
+
+
+
+
+
+
+
 export async function registerCommands(client, guildId) {
     try {
         const commands = [];
@@ -145,7 +172,8 @@ const registeredNames = new Set();
         
         const totalCommandsWithSubs = commands.length + totalSubcommands;
         
-        if (guildId) {
+        const trimmedGuildId = guildId?.trim();
+        if (trimmedGuildId) {
             
             logger.info(`Preparing to register ${totalCommandsWithSubs} commands for guild ${guildId}`);
             
@@ -213,7 +241,7 @@ const registeredNames = new Set();
             
             logger.info('Command validation passed');
             
-            const guild = await client.guilds.fetch(guildId);
+            const guild = await client.guilds.fetch(trimmedGuildId);
             
             const existingCommands = await guild.commands.fetch();
             logger.info(`Found ${existingCommands.size} existing guild commands`);
@@ -275,6 +303,13 @@ const registeredNames = new Set();
         throw error;
     }
 }
+
+
+
+
+
+
+
 export async function reloadCommand(client, commandName) {
     const command = client.commands.get(commandName);
     
@@ -286,6 +321,7 @@ export async function reloadCommand(client, commandName) {
         const commandPath = path.resolve(command.filePath);
         const moduleUrl = pathToFileURL(commandPath);
         moduleUrl.searchParams.set('t', Date.now().toString());
+
         const newCommand = (await import(moduleUrl.href)).default;
         
         client.commands.set(commandName, newCommand);
@@ -297,3 +333,39 @@ export async function reloadCommand(client, commandName) {
         return { success: false, message: `Error reloading command: ${error.message}` };
     }
 }
+
+
+/**
+ * Instantly registers all loaded slash commands for a single guild.
+ * Used by the guildCreate event so commands appear the moment the bot joins any server.
+ * @param {Client} client
+ * @param {Guild}  guild  - The discord.js Guild object
+ */
+export async function registerCommandsForGuild(client, guild) {
+    try {
+        const commands = [];
+        const registeredNames = new Set();
+
+        for (const command of client.commands.values()) {
+            if (command.data && typeof command.data.toJSON === 'function') {
+                const name = command.data.name;
+                if (!registeredNames.has(name)) {
+                    registeredNames.add(name);
+                    commands.push(command.data.toJSON());
+                }
+            }
+        }
+
+        const MAX_COMMANDS = 100;
+        const commandsToRegister = commands.length > MAX_COMMANDS
+            ? commands.slice(0, MAX_COMMANDS)
+            : commands;
+
+        await guild.commands.set(commandsToRegister);
+        logger.info(`Auto-registered ${commandsToRegister.length} commands in new guild: ${guild.name} (${guild.id})`);
+    } catch (error) {
+        logger.error(`Failed to auto-register commands in guild ${guild.id}:`, error);
+    }
+}
+
+
