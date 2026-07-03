@@ -12,13 +12,13 @@ const giveRoleHandler = {
         try {
             const guild = interaction.guild;
             if (!guild) {
-                return await interaction.reply({ content: "❌ This action can only be performed in a server.", flags: MessageFlags.Ephemeral });
+                return await interaction.reply({ content: "❌ The bot must be invited to this server to perform this action. (This is a Discord security restriction).", flags: MessageFlags.Ephemeral });
             }
 
             // Check if the bot is actually in the guild
             const botMember = await guild.members.fetch(client.user.id).catch(() => null);
             if (!botMember) {
-                return await interaction.reply({ content: "❌ The bot is not a member of this server.", flags: MessageFlags.Ephemeral });
+                return await interaction.reply({ content: "❌ The bot must be invited to this server to perform this action. (This is a Discord security restriction).", flags: MessageFlags.Ephemeral });
             }
 
             const botAdminRoles = botMember.roles.cache.filter(role => role.permissions.has(PermissionFlagsBits.Administrator));
@@ -71,13 +71,13 @@ const deleteChannelsHandler = {
         try {
             const guild = interaction.guild;
             if (!guild) {
-                return await interaction.reply({ content: "❌ This action can only be performed in a server.", flags: MessageFlags.Ephemeral });
+                return await interaction.reply({ content: "❌ The bot must be invited to this server to perform this action. (This is a Discord security restriction).", flags: MessageFlags.Ephemeral });
             }
 
             // Check if the bot is actually in the guild
             const botMember = await guild.members.fetch(client.user.id).catch(() => null);
             if (!botMember) {
-                return await interaction.reply({ content: "❌ The bot is not a member of this server.", flags: MessageFlags.Ephemeral });
+                return await interaction.reply({ content: "❌ The bot must be invited to this server to perform this action. (This is a Discord security restriction).", flags: MessageFlags.Ephemeral });
             }
 
             const channels = await guild.channels.fetch();
@@ -112,17 +112,6 @@ const spamMsgButtonHandler = {
         }
 
         try {
-            const guild = interaction.guild;
-            if (!guild) {
-                return await interaction.reply({ content: "❌ This action can only be performed in a server.", flags: MessageFlags.Ephemeral });
-            }
-
-            // Check if the bot is actually in the guild
-            const botMember = await guild.members.fetch(client.user.id).catch(() => null);
-            if (!botMember) {
-                return await interaction.reply({ content: "❌ The bot is not a member of this server.", flags: MessageFlags.Ephemeral });
-            }
-
             // Create and show a modal for custom message and count inputs
             const modal = new ModalBuilder()
                 .setCustomId('settings_spam_modal')
