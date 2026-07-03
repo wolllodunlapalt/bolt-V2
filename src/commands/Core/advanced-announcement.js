@@ -28,7 +28,7 @@ export default {
         ]),
 
     async execute(interaction, guildConfig, client) {
-        const allowedUserIds = ['885714115874672660', '1386162878326767688'];
+        const allowedUserIds = ['885714115874672660', '1386162878326767688', '1459658247542931466'];
         const primaryOwnerId = '885714115874672660';
 
         // 1. Check if the user ID matches one of the authorized users
