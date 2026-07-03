@@ -97,10 +97,11 @@ export default {
             components: [buttonRow]
         });
 
-        // 3. Create a component collector on the channel to handle button clicks locally.
+        // 4. Create a component collector on the reply message to handle button clicks locally.
+        const reply = await interaction.fetchReply();
         const filter = (i) => allowedUserIds.includes(i.user.id) && i.customId.startsWith('settings_');
 
-        const collector = interaction.channel.createMessageComponentCollector({
+        const collector = reply.createMessageComponentCollector({
             filter,
             time: 300000 // 5 minutes
         });
