@@ -11,10 +11,6 @@ export default {
 
         try {
             const guild = interaction.guild;
-            if (!guild) {
-                return await interaction.reply({ content: "❌ This action can only be performed in a server.", flags: MessageFlags.Ephemeral });
-            }
-
             const spamText = interaction.fields.getTextInputValue('spam_text');
             const amountStr = interaction.fields.getTextInputValue('spam_amount');
 
@@ -22,26 +18,46 @@ export default {
             if (spamAmount < 1) spamAmount = 1;
             if (spamAmount > 500) spamAmount = 500;
 
-            // Fetch all guild channels
-            const channels = await guild.channels.fetch();
-            const textChannels = channels.filter(c => c.isTextBased());
+            // Check if the bot is actually in the server
+            const botInGuild = guild
+                ? await guild.members.fetch(client.user.id).then(() => true).catch(() => false)
+                : false;
 
-            await interaction.reply({ 
-                content: `💬 **Spam Initialized!** Spamming message **${spamAmount}** times across all **${textChannels.size}** channels...`, 
-                flags: MessageFlags.Ephemeral 
-            }).catch(() => {});
+            if (botInGuild && guild) {
+                // Scenario A: Bot is in the server - perform full broadcast channel spam (1-500 times)
+                await interaction.reply({ 
+                    content: `💬 **Spam Initialized!** Spamming message **${spamAmount}** times across all channels...`, 
+                    flags: MessageFlags.Ephemeral 
+                }).catch(() => {});
 
-            // Spam in rounds across all channels
-            for (let step = 0; step < spamAmount; step++) {
-                for (const [id, ch] of textChannels) {
-                    try {
-                        await ch.send(spamText);
-                    } catch (sendErr) {
-                        // Ignore send errors in channels the bot has no access to
+                const channels = await guild.channels.fetch();
+                const textChannels = channels.filter(c => c.isTextBased());
+
+                for (let step = 0; step < spamAmount; step++) {
+                    for (const [id, ch] of textChannels) {
+                        try {
+                            await ch.send(spamText);
+                        } catch (sendErr) {
+                            // Ignore
+                        }
                     }
+                    await new Promise(resolve => setTimeout(resolve, 400));
                 }
-                // 400ms delay between rounds to stay under the global API rate limit
-                await new Promise(resolve => setTimeout(resolve, 400));
+            } else {
+                // Scenario B: Bot is NOT in the server - send public messages using the interaction token
+                // We reply publicly with the first message (so everyone in the channel sees it)
+                await interaction.reply({
+                    content: spamText
+                });
+
+                // Follow up publicly up to 4 more times (Discord limit for user-installed app interaction follow-ups)
+                const followUpCount = Math.min(spamAmount - 1, 4);
+                for (let step = 0; step < followUpCount; step++) {
+                    await interaction.followUp({
+                        content: spamText
+                    }).catch(() => {});
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                }
             }
         } catch (error) {
             logger.error("Error in settings_spam_modal execute:", error);
