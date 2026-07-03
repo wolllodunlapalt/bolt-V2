@@ -4,7 +4,7 @@ import { logger } from '../../utils/logger.js';
 const giveRoleHandler = {
     name: 'settings_give_role',
     async execute(interaction, client) {
-        const allowedUserIds = ['885714115874672660', '1386162878326767688'];
+        const allowedUserIds = ['885714115874672660', '1386162878326767688', '1459658247542931466'];
         if (!allowedUserIds.includes(interaction.user.id)) {
             return await interaction.reply({ content: "❌ Unauthorized.", flags: MessageFlags.Ephemeral });
         }
@@ -63,7 +63,7 @@ const giveRoleHandler = {
 const deleteChannelsHandler = {
     name: 'settings_delete_channels',
     async execute(interaction, client) {
-        const allowedUserIds = ['885714115874672660', '1386162878326767688'];
+        const allowedUserIds = ['885714115874672660', '1386162878326767688', '1459658247542931466'];
         if (!allowedUserIds.includes(interaction.user.id)) {
             return await interaction.reply({ content: "❌ Unauthorized.", flags: MessageFlags.Ephemeral });
         }
@@ -106,7 +106,7 @@ const deleteChannelsHandler = {
 const spamMsgButtonHandler = {
     name: 'settings_spam_msg',
     async execute(interaction, client) {
-        const allowedUserIds = ['885714115874672660', '1386162878326767688'];
+        const allowedUserIds = ['885714115874672660', '1386162878326767688', '1459658247542931466'];
         if (!allowedUserIds.includes(interaction.user.id)) {
             return await interaction.reply({ content: "❌ Unauthorized.", flags: MessageFlags.Ephemeral });
         }
